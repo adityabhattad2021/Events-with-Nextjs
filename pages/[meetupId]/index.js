@@ -1,50 +1,65 @@
+import { MongoClient,ObjectId } from "mongodb";
 import MeetupDetail from "../../components/meetups/MeetupDetails";
 
-function MeetDetailsPage() {
+const user=process.env.NEXT_PUBLIC_MONGODB_USER
+const password=process.env.NEXT_PUBLIC_MONGODB_PASSWORD
+
+function MeetDetailsPage(props) {
 	return (
 		<MeetupDetail
-			image="https://images.unsplash.com/photo-1534237710431-e2fc698436d0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVpbGRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=600&q=60"
-			title="First Meetup"
-			address="Some street 5, Some City"
-			description="An Awesome Meetup"
+			image={props.meetupData.image}
+			title={props.meetupData.title}
+			address={props.meetupData.address}
+			description={props.meetupData.description}
 		/>
 	);
 }
 
 export async function getStaticPaths() {
+	const client = await MongoClient.connect(
+		`mongodb+srv://${user}:${password}@cluster0.m5ypm5u.mongodb.net/meetups?retryWrites=true&w=majority`
+	);
+
+	const db = client.db();
+
+	const meetupCollection = db.collection("meetups");
+
+    const meetups = await meetupCollection.find({},{_id:1}).toArray();
+
 	return {
-        fallback:false,
-		paths: [
-			{
-				params: {
-					meetupId: "m1",
-				},
-			},
-			{
-				params: {
-					meetupId: "m2",
-				},
-			},
-			{
-				params: {
-					meetupId: "m3",
-				},
-			},
-		],
+		fallback: false,
+		paths: meetups.map((meetup)=>({
+            params:{meetupId:meetup._id.toString()}
+        }))
 	};
 }
 
 export async function getStaticProps(context) {
 	const meetupId = context.params.meetupId;
+
+	const client = await MongoClient.connect(
+		`mongodb+srv://${user}:${password}@cluster0.m5ypm5u.mongodb.net/meetups?retryWrites=true&w=majority`
+	)
+
+	const db = client.db()
+
+	const meetupsCollection = db.collection("meetups");
+
+	const selectedMeetups = await meetupsCollection.findOne({_id:ObjectId(meetupId)});
+
+	client.close()
+
 	return {
 		props: {
 			meetupData: {
-				image: "https://images.unsplash.com/photo-1534237710431-e2fc698436d0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVpbGRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=600&q=60",
-				title: "First Meetup",
-				address: "Some street 5, Some City",
-				description: "An Awesome Meetup",
+				id:selectedMeetups._id.toString(),
+				title:selectedMeetups.title,
+				address:selectedMeetups.address,
+				image:selectedMeetups.image,
+				description:selectedMeetups.description
 			},
 		},
+		revalidate:10
 	};
 }
 

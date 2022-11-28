@@ -1,43 +1,9 @@
+import { MongoClient } from "mongodb";
 import MeetupList from "../components/meetups/MeetupList";
 
 
-const DUMMY_MEETUPS=[
-    {
-        id:"m1",
-        title:"A Meetup",
-        image:'https://images.unsplash.com/photo-1534237710431-e2fc698436d0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVpbGRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=600&q=60',
-        address:"Some Address 10, 12345 second street",
-        description:"This is a awesome meetup"
-    },
-    {
-        id:"m2",
-        title:"A Meetup",
-        image:'https://images.unsplash.com/photo-1534237710431-e2fc698436d0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVpbGRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=600&q=60',
-        address:"Some Address 10, 12345 second street",
-        description:"This is a awesome meetup"
-    },
-    {
-        id:"m3",
-        title:"A Meetup",
-        image:'https://images.unsplash.com/photo-1534237710431-e2fc698436d0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVpbGRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=600&q=60',
-        address:"Some Address 10, 12345 second street",
-        description:"This is a awesome meetup"
-    },
-    {
-        id:"m4",
-        title:"A Meetup",
-        image:'https://images.unsplash.com/photo-1534237710431-e2fc698436d0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVpbGRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=600&q=60',
-        address:"Some Address 10, 12345 second street",
-        description:"This is a awesome meetup"
-    },
-    {
-        id:"m5",
-        title:"A Meetup",
-        image:'https://images.unsplash.com/photo-1534237710431-e2fc698436d0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVpbGRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=600&q=60',
-        address:"Some Address 10, 12345 second street",
-        description:"This is a awesome meetup"
-    }
-]
+const user=process.env.NEXT_PUBLIC_MONGODB_USER
+const password=process.env.NEXT_PUBLIC_MONGODB_PASSWORD
 
 function HomePage(props){
     return  (
@@ -48,9 +14,27 @@ function HomePage(props){
 }
 
 export async function getStaticProps(){
+
+    const client = await MongoClient.connect(
+        `mongodb+srv://${user}:${password}@cluster0.m5ypm5u.mongodb.net/meetups?retryWrites=true&w=majority`
+    )
+
+    const db = client.db()
+
+    const meetupsCollection = db.collection('meetups');
+
+    const meetups = await meetupsCollection.find().toArray();
+
+    client.close()
+
     return {
         props:{
-            meetups:DUMMY_MEETUPS
+            meetups:meetups.map((meetup)=>({
+                title:meetup.title,
+                address:meetup.address,
+                image:meetup.image,
+                id:meetup._id.toString(),
+            }))
         },
         revalidate:10  // Time (in seconds) after the that the page will be regenerated with new data again(if any).
     };
