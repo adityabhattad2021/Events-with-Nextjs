@@ -1,4 +1,5 @@
 import { MongoClient } from "mongodb";
+import { Fragment } from "react";
 import MeetupList from "../components/meetups/MeetupList";
 
 
@@ -7,9 +8,16 @@ const password=process.env.NEXT_PUBLIC_MONGODB_PASSWORD
 
 function HomePage(props){
     return  (
-        <div>
+        <Fragment>
+            <Head>
+                <title>Events With Nextjs</title>
+                <meta
+                    name="description"
+                    content="Browse a huge list of awesome events here!"
+                />
+            </Head>
             <MeetupList meetups={props.meetups} />
-        </div>
+        </Fragment>
     )
 }
 

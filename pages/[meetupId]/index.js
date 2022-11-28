@@ -6,12 +6,21 @@ const password=process.env.NEXT_PUBLIC_MONGODB_PASSWORD
 
 function MeetDetailsPage(props) {
 	return (
-		<MeetupDetail
+		<Fragment>
+			<Head>
+				<title>{props.meetupData.image}</title>
+				<meta
+					name="description"
+					content={props.meetupData.description}
+				/>
+			</Head>
+			<MeetupDetail
 			image={props.meetupData.image}
 			title={props.meetupData.title}
 			address={props.meetupData.address}
 			description={props.meetupData.description}
 		/>
+		</Fragment>
 	);
 }
 
