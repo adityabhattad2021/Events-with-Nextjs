@@ -25,6 +25,11 @@
     color: #2c292c;
 }
 
+.actions {
+    padding:1.5rem;
+    text-align: center;
+}
+
 .actions button {
     font: inherit;
     cursor: pointer;
